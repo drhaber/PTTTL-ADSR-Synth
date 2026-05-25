@@ -55,24 +55,19 @@ def _generate_samples(parsed, amplitude):
         'i': 0, # SINE_WAVE
     }
 
+    def unpack_patch(patch):
+        p = [x.strip() for x in patch.split(',')]
+        if len(p) != 7:
+            raise ValueError(f"Expected 7 fields, got {len(p)}")
+        # Return: wave_key, a, d, s, r, gain, octave_offset
+        return p[0], float(p[1])/1000.0, float(p[2])/1000.0, float(p[3])/1000.0, float(p[4])/1000.0, float(p[5]), int(p[6])
+
     for i, track in enumerate(parsed.tracks):
-        # Parser ensures all patches are normalized to: wave,attack,decay,sustain,release,gain,octave_offset
-        patch_str = parsed.wadsr[i]
-        parts = [p.strip() for p in patch_str.split(',')]
-
-        if len(parts) != 7:
-            _LOGGER.error("Track %d received invalid WADSR patch: %s. Expected 7 fields.", i, patch_str)
-            continue
-
         try:
-            wave_key = parts[0]
-            # Times and levels are in ms/units of 1000, convert to seconds/scale of 1.0
-            a, d, s, r = [float(x) / 1000.0 for x in parts[1:5]]
-            gain = float(parts[5])
-            octave_offset = int(parts[6])
-        except ValueError as e:
-            _LOGGER.error("Failed to parse WADSR values for track %d: %s. Error: %s", i, patch_str, e)
-            continue
+            wave_key, a, d, s, r, gain, octave_offset = unpack_patch(parsed.wadsr[i])
+        except (ValueError, IndexError):
+            _LOGGER.warning("Track %d patch invalid (%s), falling back to default.", i, parsed.wadsr[i])
+            wave_key, a, d, s, r, gain, octave_offset = unpack_patch(default_wadsr)
 
         wavetype = wave_map.get(wave_key)
         if wavetype is None:
