@@ -271,16 +271,12 @@ class Tone(object):
                 points = [points[i] + vpoints[i] for i in range(len(points))]
 
         if points is None:
-            samples = Samples()
-            generated_samples = self.samplefunc(frequency, self._rate, self._amp, num)
-            period = len(generated_samples)
-            i = 0
-
-            for _ in range(num):
-                samples.append(generated_samples[i])
-                i += 1
-
-            phase = self._index_to_phase(i % period, period)
+            # Directly use the generated list to avoid redundant iteration
+            samples = Samples(self.samplefunc(frequency, self._rate, self._amp, num))
+            
+            # Calculate phase for the next note based on the actual frequency period
+            actual_period = self._rate / frequency
+            phase = self._index_to_phase(num % actual_period, actual_period)
         else:
             samples, phase = self._variable_pitch_tone(points, phase)
 
