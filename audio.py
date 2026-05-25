@@ -56,22 +56,23 @@ def _generate_samples(parsed, amplitude):
     }
 
     for i, track in enumerate(parsed.tracks):
-        patch_str = parsed.wadsr[i] if (i < len(parsed.wadsr) and parsed.wadsr[i]) else default_wadsr
-    
-        # Format: wave,attack,decay,sustain,release,gain,octave_offset
-        patch_parts = patch_str.split(',')
-        wave_key = patch_parts[0]
-        a, d, s, r = [float(x)/1000 for x in patch_parts[1:5]]
+        # Parser ensures all patches are normalized to: wave,attack,decay,sustain,release,gain,octave_offset
+        patch_str = parsed.wadsr[i]
+        parts = [p.strip() for p in patch_str.split(',')]
 
-        gain = float(patch_parts[5]) if len(patch_parts) > 5 else get_cfg("fallback_instrument", "gain")
-        octave_offset = int(patch_parts[6]) if len(patch_parts) > 6 else get_cfg("fallback_instrument", "octave_offset")
+        if len(parts) != 7:
+            _LOGGER.error("Track %d received invalid WADSR patch: %s. Expected 7 fields.", i, patch_str)
+            continue
 
-        # Log debug info for missing fields if debug is enabled
-        if is_debug:
-            if len(patch_parts) <= 5:
-                _LOGGER.debug("Gain value missing in patch for track %s, using fallback.", i)
-            if len(patch_parts) <= 6:
-                _LOGGER.debug("Octave offset missing in patch for track %s, using fallback.", i)
+        try:
+            wave_key = parts[0]
+            # Times and levels are in ms/units of 1000, convert to seconds/scale of 1.0
+            a, d, s, r = [float(x) / 1000.0 for x in parts[1:5]]
+            gain = float(parts[5])
+            octave_offset = int(parts[6])
+        except ValueError as e:
+            _LOGGER.error("Failed to parse WADSR values for track %d: %s. Error: %s", i, patch_str, e)
+            continue
 
         wavetype = wave_map.get(wave_key)
         if wavetype is None:

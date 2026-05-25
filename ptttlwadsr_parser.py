@@ -47,22 +47,22 @@ def is_instrument_name(patch_spec):
     """
     return patch_spec and ',' not in patch_spec and patch_spec.isalpha()
 
-# Initialize variables straight from your conffiguration.yaml file up front as the fallback
+# variables straight from configuration.yaml
 default_bpm = get_cfg("global_defaults", "bpm")
 default_duration = get_cfg("global_defaults", "duration")
 default_octave = get_cfg("global_defaults", "octave")
 default_vfreq = get_cfg("global_defaults", "vibrato_freq_hz")
 default_vvar = get_cfg("global_defaults", "vibrato_var_hz")
 
-w = get_cfg("fallback_instrument", "wave")
-a = get_cfg("fallback_instrument", "attack")
-d = get_cfg("fallback_instrument", "decay")
-s = get_cfg("fallback_instrument", "sustain")
-r = get_cfg("fallback_instrument", "release")
-g = get_cfg("fallback_instrument", "gain")
-o = get_cfg("fallback_instrument", "octave_offset")
+w = get_cfg("fallback_instrument", "wave")      # wave type     
+a = get_cfg("fallback_instrument", "attack")    # attack time in ms
+d = get_cfg("fallback_instrument", "decay")     # decay time in ms
+s = get_cfg("fallback_instrument", "sustain")   # sustain level (0-1000, where 1000 is full volume)        
+r = get_cfg("fallback_instrument", "release")   # release time in ms
+g = get_cfg("fallback_instrument", "gain")          # Primary use case is for instruments.yaml      gain multiplier (0.0 to 1.0, where 1.0 is full volume)
+o = get_cfg("fallback_instrument", "octave_offset") # Primary use case is for instruments.yaml  octave offset (added to the octave specified by the note, can be negative) 
 
-default_wadsr = f"{w},{a},{d},{s},{r},{g},{o}"
+default_wadsr = f"{w},{a},{d},{s},{r},{g},{o}" # default WADSR patch string used in ALL RTTTL Tracks
 
 NOTES = {
     "c": 261.625565301,
@@ -84,6 +84,7 @@ NOTES = {
     "bb": 466.163761518,
     "b": 493.883301256
 }
+#Notes are based on the 4th octave
 
 class PTTTLSyntaxError(Exception): pass
 class PTTTLValueError(Exception): pass
@@ -94,7 +95,7 @@ def _invalid_octave(note): raise PTTTLValueError(f"invalid octave in note '{note
 def _invalid_vibrato(vdata): raise PTTTLValueError(f"invalid vibrato settings: '{vdata}'")
 
 def _ignore_line(line):
-    return (line == "") or line.startswith('!') or line.startswith('#')
+    return (line == "") or line.startswith('!') or line.startswith('#') # Lines starting with '!' or '#' are treated as comments and ignored
 
 class PTTTLNote(object):
     """
@@ -125,7 +126,8 @@ class PTTTLNote(object):
 
 class PTTTLData(object):
     """
-    Represents song data extracted from a PTTTLIS file.
+    Represents song data extracted from the input string built off RTTTL 
+    https://en.wikipedia.org/wiki/Ring_Tone_Text_Transfer_Language
     Tracks parallel note listings and data-driven patch assignments.
     """
     def __init__(self, bpm=None, octave=None, duration=None,
@@ -143,7 +145,6 @@ class PTTTLData(object):
         self.wadsr.append(patch if patch is not None else default_wadsr)
 
     def __str__(self):
-        # Updated to reference self.wadsr instead of the now-defunct self.instruments
         return f"{self.__class__.__name__}(Tracks: {len(self.tracks)}, Patches: {len(self.wadsr)})"
 
     def __repr__(self):
@@ -152,7 +153,7 @@ class PTTTLData(object):
 
 class PTTTLParser(object):
     """
-    Converts PTTTLIS 4-field source text to an orchestrated PTTTLData object.
+    Converts PTTTL 4-field source text to an orchestrated PTTTLData object.
     """
     def _is_valid_octave(self, octave):
         return octave >= 0 and octave <= 8
@@ -323,18 +324,58 @@ class PTTTLParser(object):
 
         return ret
 
+    def _normalize_patch(self, patch_str):
+        """
+        Normalizes a patch string (keyed or positional) into the standard format:
+        wave,attack,decay,sustain,release,gain,octave_offset
+        """
+        if not patch_str:
+            return default_wadsr
+
+        if '=' in patch_str:
+            # Keyed format (any order): w=s,a=0,d=0,s=1000,r=0,g=1.0,o=0
+            wave_key, a_val, d_val, s_val, r_val, g_val, o_val = w, a, d, s, r, g, o
+
+            for part in patch_str.split(','):
+                if '=' not in part:
+                    continue
+                k, v = [x.strip().lower() for x in part.split('=', 1)]
+                try:
+                    if k == 'w': wave_key = v
+                    elif k == 'a': a_val = float(v)
+                    elif k == 'd': d_val = float(v)
+                    elif k == 's': s_val = float(v)
+                    elif k == 'r': r_val = float(v)
+                    elif k == 'g': g_val = float(v)
+                    elif k == 'o': o_val = int(v)
+                except ValueError:
+                    _LOGGER.warning("Invalid value in keyed patch field: %s=%s", k, v)
+            
+            return f"{wave_key},{a_val},{d_val},{s_val},{r_val},{g_val},{o_val}"
+        else:
+            # Positional format: wave,attack,decay,sustain,release,gain,octave_offset
+            parts = [p.strip() for p in patch_str.split(',')]
+            wave_key = parts[0] if len(parts) > 0 else w
+            a_val = parts[1] if len(parts) > 1 else a
+            d_val = parts[2] if len(parts) > 2 else d
+            s_val = parts[3] if len(parts) > 3 else s
+            r_val = parts[4] if len(parts) > 4 else r
+            g_val = parts[5] if len(parts) > 5 else g
+            o_val = parts[6] if len(parts) > 6 else o
+            return f"{wave_key},{a_val},{d_val},{s_val},{r_val},{g_val},{o_val}"
+
     def _layer_to_wadsr(self, layer):
         """
         Convert an instrument layer definition to a WADSR patch string.
-        Format: wave,attack,decay,sustain,release,gain
+        Format: wave,attack,decay,sustain,release,gain,octave_offset
         """
-        wave = layer.get('wave', 'i')
-        attack = layer.get('attack', 0)
-        decay = layer.get('decay', 0)
-        sustain = layer.get('sustain', 1000)
-        release = layer.get('release', 0)
-        gain = layer.get('gain', 1.0)
-        octave_offset = layer.get('octave_offset', 0)
+        wave = layer.get('wave', w)
+        attack = layer.get('attack', a)
+        decay = layer.get('decay', d)
+        sustain = layer.get('sustain', s)
+        release = layer.get('release', r)
+        gain = layer.get('gain', g)
+        octave_offset = layer.get('octave_offset', o)
 
         return f"{wave},{attack},{decay},{sustain},{release},{gain},{octave_offset}"
 
@@ -401,7 +442,7 @@ class PTTTLParser(object):
                     expanded_patches.append(default_wadsr)
             else:
                 expanded_tracks.append(track)
-                expanded_patches.append(patch)
+                expanded_patches.append(self._normalize_patch(patch))
         
         tracks = expanded_tracks
         patches = expanded_patches
