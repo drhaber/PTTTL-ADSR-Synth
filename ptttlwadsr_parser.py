@@ -17,8 +17,14 @@ _LOGGER = logging.getLogger(__name__)
 
 #config parser for default values
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "configuration.yaml")
-with open(CONFIG_PATH, "r") as f:
-    CONFIG = yaml.safe_load(f)
+CONFIG = {}
+
+try:
+    if os.path.exists(CONFIG_PATH):
+        with open(CONFIG_PATH, "r") as f:
+            CONFIG = yaml.safe_load(f) or {}
+except Exception as e:
+    _LOGGER.error("Could not load configuration.yaml: %s", e)
 
 def get_cfg(key, subkey=None):
     if subkey: return CONFIG.get(key, {}).get(subkey)

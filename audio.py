@@ -21,16 +21,16 @@ _LOGGER = logging.getLogger(__name__)
 
 SAMPLE_RATE = 44100
 
-is_debug = get_cfg("debug")
-
 def get_ptttl_output_path(ptttl_string, directory="/tmp"):
     """
     Generates a unique filename based on the PTTTL name also handles debug.
     """
+    debug_mode = get_cfg("debug")
+
     # Extract the name part (before the first colon) or use 'ptttl' as fallback
     name_prefix = ptttl_string.split(':')[0].strip().replace('/', '_') or "ptttl_wadsr"
     
-    if is_debug:
+    if debug_mode:
         _LOGGER.warning("Debug mode is ON: Output will be saved to a fixed filename, PTTTL_WADSR_debug.wav, overwrites will occur.")
         return os.path.join(directory, "PTTTL_WADSR_debug.wav")
     else:
