@@ -317,8 +317,8 @@ class Tone(object):
 
     @staticmethod
     def _index_to_phase(index, size):
-        return (float(index) / (size - 1)) * 359.0
+        return (float(index) / size) * 360.0
 
     @staticmethod
     def _phase_to_index(phase, size):
-        return int((float(phase) / 359.0) * (size - 1))
+        return int((float(phase) / 360.0) * size) % int(size)
