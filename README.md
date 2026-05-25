@@ -1,6 +1,6 @@
 # PTTTL with ADSR Synth
 
-This synth uses an extended version of the Nokia RTTTL (Ring Tone Text Transfer Language) format, adding support for multiple tracks (polyphony), ADSR envelopes, vibrato, and custom instrument definitions.
+This synth uses an extended version of the [Nokia RTTTL (Ring Tone Text Transfer Language)](https://en.wikipedia.org/wiki/Ring_Tone_Text_Transfer_Language) format, adding support for multiple tracks (polyphony), ADSR envelopes, vibrato, and custom instrument definitions.
 
 ## Song String Syntax
 
