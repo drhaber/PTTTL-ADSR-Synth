@@ -87,6 +87,7 @@ https://picaxe.com/rtttl-ringtones-for-tune-command/
 
 ## Resources
 
-[Original ptttl library by Erik Nyquist](https://github.com/eriknyquist/ptttl)
+[Original ptttl library by Erik Nyquist](https://github.com/eriknyquist/ptttl) [MIT License](https://github.com/eriknyquist/ptttl?tab=MIT-1-ov-file#readme)
 
-[Orginal Tone Generator by Erik Nyquist](https://github.com/eriknyquist/tones)
+
+[Orginal Tone Generator by Erik Nyquist](https://github.com/eriknyquist/tones) [Apache 2.0 License](https://github.com/eriknyquist/tones?tab=Apache-2.0-1-ov-file#readme)
