@@ -71,8 +71,10 @@ def _generate_samples(parsed, amplitude):
 
         wavetype = wave_map.get(wave_key)
         if wavetype is None:
-            wavetype = get_cfg("fallback_instrument", "wave")
-            _LOGGER.warning("Invalid or missing wavetype '%s', defaulting", wave_key)
+            # Ensure fallback is the integer constant, not the string key
+            fallback_key = get_cfg("fallback_instrument", "wave")
+            wavetype = wave_map.get(fallback_key, 1)  # Default to Square if config is also broken
+            _LOGGER.warning("Invalid wavetype '%s', defaulting to '%s'", wave_key, fallback_key)
 
         mixer.create_track(i, wavetype=wavetype, 
                            attack=a, decay=d, sustain=s, release=r, gain=gain)
@@ -85,7 +87,7 @@ def _generate_samples(parsed, amplitude):
                 mixer.add_tone(i, frequency=pitch, duration=note.duration,
                                vibrato_frequency=note.vibrato_frequency,
                                vibrato_variance=note.vibrato_variance)
-    return mixer.mix()
+    return mixer
 
 def ptttl_to_wav_samples(ptttl_data, amplitude=0.5):
     """
@@ -93,7 +95,7 @@ def ptttl_to_wav_samples(ptttl_data, amplitude=0.5):
     """
     parser = PTTTLParser()
     data = parser.parse(ptttl_data)
-    return _generate_samples(data, amplitude).serialize()
+    return _generate_samples(data, amplitude).mix().serialize()
 
 def ptttl_to_wav(ptttl_data, wav_filename, amplitude=0.5):
     """
@@ -101,5 +103,5 @@ def ptttl_to_wav(ptttl_data, wav_filename, amplitude=0.5):
     """
     parser = PTTTLParser()
     data = parser.parse(ptttl_data)
-    sampledata = _generate_samples(data, amplitude).serialize()
-    Mixer(SAMPLE_RATE, amplitude).write_wav(wav_filename, sampledata)
+    mixer = _generate_samples(data, amplitude)
+    mixer.write_wav(wav_filename)
