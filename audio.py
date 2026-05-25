@@ -71,8 +71,8 @@ def _generate_samples(parsed, amplitude):
 
         wavetype = wave_map.get(wave_key)
         if wavetype is None:
-            wavetype = 1 # Default to Square Wave
-            _LOGGER.warning("Invalid or missing wavetype '%s', defaulting to Square Wave.", wave_key)
+            wavetype = get_cfg("fallback_instrument", "wave")
+            _LOGGER.warning("Invalid or missing wavetype '%s', defaulting", wave_key)
 
         mixer.create_track(i, wavetype=wavetype, 
                            attack=a, decay=d, sustain=s, release=r, gain=gain)
