@@ -1,5 +1,11 @@
 """
 THIS FILE IS 100% AI GENERATED, NOT A SINGLE LINE WAS WRITTEN BY A HUMAN, PROCEED WITH CAUTION.
+
+This module provides a command-line interface to play PTTTL strings. 
+It parses the input string, renders it to a WAV file, and then plays it using a system media player if available. 
+The output WAV file is saved in the same directory as the script with a name derived from the PTTTL string. 
+If debug mode is enabled, the output will be saved to a fixed filename, PTTTL_WADSR_debug.wav, and debug information about missing fields in patches will be logged.
+This module is NOT intended for use in the planned Home Assistant custom component, and is generated as a standalone for testing and development purposes.
 """
 
 import sys
