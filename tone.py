@@ -40,23 +40,6 @@ NUM_CHANNELS = 1
 DATA_SIZE = 2
 
 # Utility functions (from tones._utils)
-def _triangle_sample(amp, freq, rate, i):
-    """Generate a single triangle wave sample"""
-    period = rate / freq
-    phase = (i % period) / period
-    if phase < 0.25:
-        return amp * (phase * 4.0)
-    elif phase < 0.75:
-        return amp * (2.0 - phase * 4.0)
-    else:
-        return amp * (phase * 4.0 - 4.0)
-
-def _sawtooth_sample(amp, freq, rate, i):
-    """Generate a single sawtooth wave sample"""
-    period = rate / freq
-    phase = (i % period) / period
-    return amp * (2.0 * phase - 1.0)
-
 def _translate(val, in_min, in_max, out_min, out_max):
     """Translate a value from one range to another"""
     if in_max == in_min:
@@ -77,7 +60,8 @@ def _sine_wave_samples(freq, rate, amp, num):
     :return List[float] The audio samples representing the signal as 
                         described above.
     """
-    return [amp * math.sin((2.0 * math.pi * freq / rate) * i) for i in range(num)]
+    step = (2.0 * math.pi * freq / rate)
+    return [amp * math.sin(step * i) for i in range(num)]
 
 def _square_wave_samples(freq, rate, amp, num):
     """
@@ -93,11 +77,9 @@ def _square_wave_samples(freq, rate, amp, num):
     :return List[float] The audio samples representing the signal as 
                         described above.
     """
-    ret = []
-    for s in _sine_wave_samples(freq, rate, amp, num):
-        ret.append(amp if s > 0 else -amp)
-
-    return ret
+    period = rate / freq
+    half_period = period / 2.0
+    return [amp if (i % period) < half_period else -amp for i in range(num)]
 
 def _triangle_wave_samples(freq, rate, amp, num):
     """
@@ -113,7 +95,17 @@ def _triangle_wave_samples(freq, rate, amp, num):
     :return List[float] The audio samples representing the signal as 
                         described above.
     """
-    return [_triangle_sample(amp, freq, rate, i) for i in range(num)]
+    period = rate / freq
+    samples = []
+    for i in range(num):
+        phase = (i % period) / period
+        if phase < 0.25:
+            samples.append(amp * (phase * 4.0))
+        elif phase < 0.75:
+            samples.append(amp * (2.0 - phase * 4.0))
+        else:
+            samples.append(amp * (phase * 4.0 - 4.0))
+    return samples
 
 def _sawtooth_wave_samples(freq, rate, amp, num):
     """
@@ -129,7 +121,8 @@ def _sawtooth_wave_samples(freq, rate, amp, num):
     :return List[float] The audio samples representing the signal as 
                         described above.
     """
-    return [_sawtooth_sample(amp, freq, rate, i) for i in range(num)]
+    period = rate / freq
+    return [amp * (2.0 * ((i % period) / period) - 1.0) for i in range(num)]
 
 class Samples(list):
     """
