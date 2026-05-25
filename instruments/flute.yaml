@@ -1,0 +1,22 @@
+layers:
+  - wave: i      # Sine wave (fundamental tone)
+    attack: 150  # Slow attack (150ms) to simulate breath buildup
+    decay: 200   # Smooth transition to sustain
+    sustain: 850 # Holds the note volume
+    release: 400 # Gentle release (400ms) for the breath fade-out
+    octave_offset: 0
+    vibrato:
+      frequency: 5
+      variance: 0.15
+    gain: 0.7
+    
+  - wave: i      # Harmonic layer (first overtone)
+    attack: 200  # Slightly slower attack
+    decay: 300   # Smoother decay
+    sustain: 600 # Lower sustain for the harmonic
+    release: 500 # Slightly longer release
+    octave_offset: 1  # One octave higher
+    vibrato:
+      frequency: 5.5
+      variance: 0.1
+    gain: 0.3    # Quieter to blend with fundamental

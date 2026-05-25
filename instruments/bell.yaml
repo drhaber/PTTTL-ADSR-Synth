@@ -1,0 +1,16 @@
+layers:
+  - wave: q                 # Percussive strike
+    attack: 0               # Instant strike
+    decay: 150
+    sustain: 0              # No sustain
+    release: 100            # Short metallic tail
+    octave_offset: 1        # High ping
+    gain: 0.8
+    
+  - wave: i                 # Ringing body
+    attack: 10
+    decay: 1000
+    sustain: 200            # Subtle sustain
+    release: 800            # Long metallic ring
+    octave_offset: 0
+    gain: 0.5

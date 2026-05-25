@@ -1,0 +1,33 @@
+layers:
+  - wave: t                 
+    attack: 5
+    decay: 250
+    sustain: 0
+    release: 100
+    octave_offset: 0
+    vibrato:
+      frequency: 0
+      variance: 0
+    gain: 0.7
+    
+  - wave: i                 
+    attack: 20
+    decay: 2500
+    sustain: 150
+    release: 200
+    octave_offset: -1
+    vibrato:
+      frequency: 4.5
+      variance: 0.3
+    gain: 0.5
+
+  - wave: s                 
+    attack: 15
+    decay: 1800
+    sustain: 80
+    release: 150
+    octave_offset: 1
+    vibrato:
+      frequency: 5.5
+      variance: 0.2
+    gain: 0.25

@@ -1,0 +1,17 @@
+global_defaults:
+  bpm : 123               # beats per minute
+  duration : 8            # default duration of a whole note in milliseconds
+  octave : 4              # default octave for notes, can be overridden by individual note settings 
+  vibrato_freq_hz : 7.0   # Vibrato frequency in Hz
+  vibrato_var_hz : 20.0   # Vibrato variance in Hz (how much the pitch will vary)
+  
+fallback_instrument:  #default instrument
+  wave : i            # s = SAWTOOTH_WAVE q = SQUARE_WAVE t = TRIANGLE_WAVE i = SINE_WAVE
+  attack : 0          # values in milliseconds, will be converted to seconds in code
+  decay : 0           # "
+  sustain : 1000      # "
+  release : 0         # "
+  gain: 1.0           # "
+  octave_offset: 0    # will be the Octave specified by the note and settings
+
+debug: true         # If true, output will be saved to a fixed filename, PTTTL_WADSR_debug.wav, overwrites will occur. Also logs debug info about missing fields in patches.

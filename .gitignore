@@ -1,0 +1,13 @@
+# 1. Ignore everything in the project
+/*
+
+# 2. But track the 'instruments' folder
+!/instruments/
+
+# 3. And track your source code files
+!/*.py
+!/configuration.yaml
+!/setup.py
+!/.gitignore
+!/README.md
+!/LICENSE
